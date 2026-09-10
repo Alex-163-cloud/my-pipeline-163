@@ -8,8 +8,8 @@ build-job:
   tags:
     - linux
   script:
-    - echo "Собираем проект..."
-    - echo "Компиляция завершена!"
+    - echo "Собираем Go-приложение..."
+    - docker build -t my-go-app .
 
 test-job:
   stage: test
