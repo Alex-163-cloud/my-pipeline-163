@@ -1,0 +1,30 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build-job:
+  stage: build
+  tags:
+    - linux
+  script:
+    - echo "Собираем проект..."
+    - echo "Компиляция завершена!"
+
+test-job:
+  stage: test
+  tags:
+    - linux
+  script:
+    - echo "Запускаем тесты..."
+    - echo "Все тесты прошли успешно!"
+
+deploy-job:
+  stage: deploy
+  tags:
+    - linux
+  script:
+    - echo "Деплоим приложение..."
+    - echo "Деплой завершён!"
+  only:
+    - main
