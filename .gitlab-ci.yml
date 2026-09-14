@@ -24,7 +24,13 @@ deploy-job:
   tags:
     - linux
   script:
-    - echo "Деплоим приложение..."
+    - echo "Деплоим в Kubernetes..."
+    - kubectl apply -f k8s/deployment.yaml
+    - kubectl apply -f k8s/service.yaml
+    - kubectl rollout status deployment/my-go-app --timeout=60s
     - echo "Деплой завершён!"
+  environment:
+    name: staging
+    url: http://minikube:30080
   only:
     - main
