@@ -1,0 +1,4 @@
+builds/
+nohup.out
+*.log
+.env
