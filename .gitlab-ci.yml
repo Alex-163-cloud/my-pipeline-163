@@ -2,15 +2,26 @@ stages:
   - build
   - test
   - deploy
+  - review
+  - cleanup
 
+variables:
+  APP_NAME: my-go-app
+
+# ---------- BUILD ----------
 build-job:
   stage: build
   tags:
     - linux
   script:
-    - echo "Собираем Go-приложение..."
-    - docker build -t my-go-app .
+    - echo "Собираем Docker-образ..."
+    - docker build -t $APP_NAME:latest .
+    - echo "Образ собран!"
+  only:
+    - main
+    - merge_requests
 
+# ---------- TEST ----------
 test-job:
   stage: test
   tags:
@@ -18,19 +29,68 @@ test-job:
   script:
     - echo "Запускаем тесты..."
     - echo "Все тесты прошли успешно!"
+  only:
+    - main
+    - merge_requests
 
+# ---------- DEPLOY (только main) ----------
 deploy-job:
   stage: deploy
   tags:
     - linux
   script:
-    - echo "Деплоим в Kubernetes..."
+    - echo "Деплоим в production..."
     - kubectl apply -f k8s/deployment.yaml
     - kubectl apply -f k8s/service.yaml
-    - kubectl rollout status deployment/my-go-app --timeout=60s
+    - kubectl rollout status deployment/$APP_NAME --timeout=60s
     - echo "Деплой завершён!"
   environment:
-    name: staging
+    name: production
     url: http://minikube:30080
   only:
     - main
+
+# ---------- REVIEW (для MR) ----------
+deploy-review:
+  stage: review
+  tags:
+    - linux
+  script:
+    - echo "Создаём review-окружение для ветки $CI_COMMIT_REF_SLUG"
+    - |
+      cat <<EOF | kubectl apply -f -
+      apiVersion: example.com/v1
+      kind: DynamicEnvironment
+      metadata:
+        name: $CI_COMMIT_REF_SLUG
+        namespace: default
+      spec:
+        appName: $APP_NAME
+        branch: $CI_COMMIT_REF_SLUG
+      EOF
+    - echo "Ожидаем создания namespace..."
+    - sleep 10
+    - kubectl get namespace review-$CI_COMMIT_REF_SLUG
+    - echo "Review-окружение создано!"
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    url: http://localhost:8080
+    on_stop: stop-review
+  only:
+    - merge_requests
+
+# ---------- STOP REVIEW ----------
+stop-review:
+  stage: cleanup
+  tags:
+    - linux
+  script:
+    - echo "Удаляем review-окружение для ветки $CI_COMMIT_REF_SLUG"
+    - kubectl delete dynamicenvironment $CI_COMMIT_REF_SLUG --ignore-not-found=true
+    - echo "Review-окружение удалено!"
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    action: stop
+  when: manual
+  only:
+    - merge_requests
