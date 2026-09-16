@@ -55,8 +55,14 @@ deploy-review:
   stage: review
   tags:
     - linux
+  variables:
+    KUBECONFIG: /home/gitlab-runner/.kube/config
   script:
     - echo "Создаём review-окружение для ветки $CI_COMMIT_REF_SLUG"
+    - echo "KUBECONFIG=$KUBECONFIG"
+    - echo "HOME=$HOME"
+    - which kubectl
+    - kubectl config view --minify | grep server
     - |
       cat <<EOF | kubectl apply -f -
       apiVersion: example.com/v1
@@ -68,17 +74,14 @@ deploy-review:
         appName: $APP_NAME
         branch: $CI_COMMIT_REF_SLUG
       EOF
-    - echo "Ожидаем создания namespace..."
     - sleep 10
     - kubectl get namespace review-$CI_COMMIT_REF_SLUG
-    - echo "Review-окружение создано!"
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     url: http://localhost:8080
     on_stop: stop-review
   only:
     - merge_requests
-
 # ---------- STOP REVIEW ----------
 stop-review:
   stage: cleanup
