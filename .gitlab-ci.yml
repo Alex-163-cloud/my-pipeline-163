@@ -39,10 +39,13 @@ deploy-job:
   tags:
     - linux
   script:
+    - export KUBECONFIG=/home/gitlab-runner/.kube/config
+    - echo "KUBECONFIG=$KUBECONFIG"
+    - kubectl config view --minify | grep server
     - echo "Деплоим в production..."
     - kubectl apply -f k8s/deployment.yaml
     - kubectl apply -f k8s/service.yaml
-    - kubectl rollout status deployment/$APP_NAME --timeout=60s
+    - kubectl rollout status deployment/my-go-app --timeout=60s
     - echo "Деплой завершён!"
   environment:
     name: production
