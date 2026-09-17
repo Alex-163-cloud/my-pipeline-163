@@ -1,9 +1,0 @@
-gitops:
-  manifest_projects:
-  - id: vladimir_vgb/my-pipeline-163
-    paths:
-    - glob: 'k8s/**/*.yaml'
-    reconcile_timeout: 3600s
-    dry_run_strategy: none
-    prune: true
-    prune_timeout: 3600s
