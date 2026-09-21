@@ -33,6 +33,22 @@ test-job:
     - main
     - merge_requests
 
+# ---------- VAULT TEST ----------
+vault-test:
+  stage: test
+  tags:
+    - linux
+  id_tokens:
+    VAULT_ID_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - export VAULT_ADDR=http://vault.vault-infra.svc.cluster.local:8200
+    - export VAULT_TOKEN=$(vault write -field=token auth/jwt/login role=myproject-staging jwt=$VAULT_ID_TOKEN)
+    - echo "Vault token obtained!"
+    - vault kv get secret/myproject/staging/db-password
+  only:
+    - main
+
 # ---------- DEPLOY (только main) ----------
 deploy-job:
   stage: deploy
@@ -85,6 +101,7 @@ deploy-review:
     on_stop: stop-review
   only:
     - merge_requests
+
 # ---------- STOP REVIEW ----------
 stop-review:
   stage: cleanup
