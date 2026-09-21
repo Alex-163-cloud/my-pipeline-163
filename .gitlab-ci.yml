@@ -42,7 +42,7 @@ vault-test:
     VAULT_ID_TOKEN:
       aud: https://gitlab.com
   script:
-    - export VAULT_ADDR=http://vault.vault-infra.svc.cluster.local:8200
+    - export VAULT_ADDR=http://127.0.0.1:8200
     - export VAULT_TOKEN=$(vault write -field=token auth/jwt/login role=myproject-staging jwt=$VAULT_ID_TOKEN)
     - echo "Vault token obtained!"
     - vault kv get secret/myproject/staging/db-password
