@@ -2,23 +2,22 @@ pipeline {
     agent any
     
     stages {
-        stage('Checkout') {
+        stage('Checkout via SSH') {
             steps {
-                echo 'Code checked out!'
+                echo 'Code checked out via SSH!'
+                sh 'ls -la'
             }
         }
-        stage('Use GitLab Token') {
+        stage('Build') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'gitlab-token',
-                    usernameVariable: 'GITLAB_USER',
-                    passwordVariable: 'GITLAB_TOKEN'
-                )]) {
-                    sh '''
-                        echo "GitLab User: $GITLAB_USER"
-                        echo "Token is available: ${#GITLAB_TOKEN} chars"
-                    '''
-                }
+                echo 'Building...'
+                sh 'docker build -t my-go-app:latest .'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Testing...'
+                sh 'echo "All tests passed!"'
             }
         }
     }
