@@ -40,7 +40,7 @@ test-job:
 vault-test:
   stage: test
   tags:
-    - my-local-runner
+    - linux
   variables:
     VAULT_ADDR: "http://192.168.49.2:30907"
   id_tokens:
