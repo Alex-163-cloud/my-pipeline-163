@@ -36,18 +36,26 @@ test-job:
     - merge_requests
 
 # ---------- VAULT TEST ----------
+# ---------- VAULT TEST ----------
 vault-test:
   stage: test
   tags:
-    - linux
+    - my-local-runner
+  variables:
+    VAULT_ADDR: "http://192.168.49.2:30907"
   id_tokens:
     VAULT_ID_TOKEN:
       aud: https://gitlab.com
   script:
-    - export VAULT_ADDR=http://127.0.0.1:8200
-    - export VAULT_TOKEN=$(vault write -field=token auth/jwt/login role=myproject-staging jwt=$VAULT_ID_TOKEN)
-    - echo "Vault token obtained!"
-    - vault kv get secret/myproject/staging/db-password
+    - set -eu
+    - echo "VAULT_ADDR = $VAULT_ADDR"
+    - vault version
+    - vault status
+    - export VAULT_TOKEN="$(vault write -field=token auth/jwt/login role=myproject-staging jwt="$VAULT_ID_TOKEN")"
+    - test -n "$VAULT_TOKEN"
+    - echo "Vault authentication succeeded."
+    - vault kv get -format=json secret/myproject/staging/db-password >/dev/null
+    - echo "Secret read succeeded."
   only:
     - main
 
