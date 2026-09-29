@@ -19,6 +19,7 @@ triggers {
         stage('Checkout') {
             steps {
                 echo 'Code checked out!'
+                echo "TIMEZONE = ${TIMEZONE}"
                 sh 'ls -la'
             }
         }
