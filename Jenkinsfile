@@ -3,6 +3,7 @@ pipeline {
 
 environment {
         TIMEZONE = 'Europe/Moscow'
+        DOCKER_HUB_USER = 'zakon13'
     }
 
 options {
@@ -23,12 +24,20 @@ triggers {
                 sh 'ls -la'
             }
         }
-        stage('Build') {
-            steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t my-go-app:latest .'
+        stage('Build & Push Docker Image') {
+    steps {
+        script {
+            echo "Building image ${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}..."
+            app = docker.build("${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}")
+
+            docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
+                app.push()
+                app.push('latest')
             }
+            echo "Pushed to Docker Hub"
         }
+    }
+}
         stage('Test') {
             steps {
                 echo 'Testing...'
