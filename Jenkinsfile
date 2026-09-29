@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+environment {
+        TIMEZONE = 'Europe/Moscow'
+    }
+
 options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 10, unit: 'MINUTES')
