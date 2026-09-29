@@ -12,9 +12,6 @@ options {
         timestamps()
     }
 
-triggers {
-        cron('*/30 * * * *')
-    }
     
     stages {
         stage('Checkout') {
@@ -28,7 +25,7 @@ triggers {
     steps {
         script {
             echo "Building image ${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}..."
-            app = docker.build("${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}")
+            def app = docker.build("${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}")
 
             docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
                 app.push()
