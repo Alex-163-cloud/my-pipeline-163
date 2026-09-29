@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 10, unit: 'MINUTES')
+        timestamps()
+    }
+
 triggers {
         cron('*/30 * * * *')
     }
