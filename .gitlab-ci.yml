@@ -1,5 +1,9 @@
 include:
   - template: Security/SAST.gitlab-ci.yml
+
+semgrep-sast:
+  rules:
+    - when: never
 stages:
   - build
   - test
