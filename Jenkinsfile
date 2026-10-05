@@ -42,19 +42,22 @@ pipeline {
         }
 
         stage('Build & Push Docker Image') {
-            steps {
-                script {
-                    echo "Building image ${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}..."
-                    def app = docker.build("${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}")
+    steps {
+        script {
+            echo "Building image ${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}..."
+            def app = docker.build("${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}")
 
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
-                        app.push()
-                        app.push('latest')
-                    }
-                    echo "Pushed to Docker Hub"
-                }
+            withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push ${DOCKER_HUB_USER}/my-go-app:${BUILD_NUMBER}
+                    docker push ${DOCKER_HUB_USER}/my-go-app:latest
+                '''
             }
+            echo "Pushed to Docker Hub"
         }
+    }
+}
 
         stage('Test') {
             steps {
