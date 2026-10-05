@@ -1,11 +1,11 @@
 pipeline {
     agent {
-    docker {
-        image 'golang:1.21-alpine'
-        args '-u root -v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/.kube:/root/.kube'
-        reuseNode true
+        docker {
+            image 'golang:1.21-alpine'
+            args '-u root -v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/.kube:/root/.kube'
+            reuseNode true
+        }
     }
-}
 
     environment {
         TIMEZONE = 'Europe/Moscow'
@@ -42,23 +42,23 @@ pipeline {
         }
 
         stage('Build & Push Docker Image') {
-    steps {
-        script {
-            echo "Building image ${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}..."
-            def app = docker.build("${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}")
+            steps {
+                script {
+                    echo "Building image ${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}..."
+                    def app = docker.build("${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}")
 
-            withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker push ${DOCKER_HUB_USER}/my-go-app:${BUILD_NUMBER}
-                    docker tag ${DOCKER_HUB_USER}/my-go-app:${BUILD_NUMBER} ${DOCKER_HUB_USER}/my-go-app:latest
-                    docker push ${DOCKER_HUB_USER}/my-go-app:latest
-                '''
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh '''
+                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            docker push ${DOCKER_HUB_USER}/my-go-app:${BUILD_NUMBER}
+                            docker tag ${DOCKER_HUB_USER}/my-go-app:${BUILD_NUMBER} ${DOCKER_HUB_USER}/my-go-app:latest
+                            docker push ${DOCKER_HUB_USER}/my-go-app:latest
+                        '''
+                    }
+                    echo "Pushed to Docker Hub"
+                }
             }
-            echo "Pushed to Docker Hub"
         }
-    }
-}
 
         stage('Test') {
             steps {
@@ -68,34 +68,28 @@ pipeline {
         }
 
         stage('Deploy to K8s') {
-    steps {
-        echo 'Deploying to Kubernetes...'
-        sh '''
-            export KUBECONFIG=/root/.kube/config
-            echo "KUBECONFIG=$KUBECONFIG"
-            ls -la /root/.kube/
-            kubectl apply -f k8s/deployment.yaml
-            kubectl apply -f k8s/service.yaml
-            kubectl rollout status deployment/my-go-app --timeout=60s
-        '''
-        echo 'Deployed successfully!'
-    }
-}
+            steps {
+                echo 'Deploying to Kubernetes...'
+                sh '''
+                    export KUBECONFIG=/root/.kube/config
+                    echo "KUBECONFIG=$KUBECONFIG"
+                    ls -la /root/.kube/
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+                    kubectl rollout status deployment/my-go-app --timeout=60s
+                '''
+                echo 'Deployed successfully!'
+            }
+        }
 
         stage('Verify') {
-    steps {
-        sh '''
-            export KUBECONFIG=/root/.kube/config
-            kubectl get pods -l app=my-go-app
-            kubectl get svc my-go-app
-        '''
+            steps {
+                sh '''
+                    export KUBECONFIG=/root/.kube/config
+                    kubectl get pods -l app=my-go-app
+                    kubectl get svc my-go-app
+                '''
+            }
+        }
     }
-}                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
+}
