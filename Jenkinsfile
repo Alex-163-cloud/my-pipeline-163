@@ -1,15 +1,17 @@
 pipeline {
     agent {
-    docker {
-        image 'golang:1.21-alpine'
-        args '-u root -v /var/run/docker.sock:/var/run/docker.sock -v jenkins-kube:/root/.kube'
-        reuseNode true
+        docker {
+            image 'golang:1.21-alpine'
+            args '-u root -v /var/run/docker.sock:/var/run/docker.sock -v jenkins-kube:/root/.kube'
+            reuseNode true
+        }
     }
-}
 
-environment {
-    KUBECONFIG = '/root/.kube/config'
-}
+    environment {
+        TIMEZONE = 'Europe/Moscow'
+        DOCKER_HUB_USER = 'zakon13'
+        KUBECONFIG = '/root/.kube/config'
+    }
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
