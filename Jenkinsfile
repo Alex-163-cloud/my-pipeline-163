@@ -72,11 +72,9 @@ pipeline {
                 echo 'Deploying to Kubernetes...'
                 sh '''
                     export KUBECONFIG=/root/.kube/config
-                    echo "KUBECONFIG=$KUBECONFIG"
-                    ls -la /root/.kube/
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
-                    kubectl rollout status deployment/my-go-app --timeout=60s
+                    kubectl --insecure-skip-tls-verify apply -f k8s/deployment.yaml
+                    kubectl --insecure-skip-tls-verify apply -f k8s/service.yaml
+                    kubectl --insecure-skip-tls-verify rollout status deployment/my-go-app --timeout=60s
                 '''
                 echo 'Deployed successfully!'
             }
@@ -86,8 +84,8 @@ pipeline {
             steps {
                 sh '''
                     export KUBECONFIG=/root/.kube/config
-                    kubectl get pods -l app=my-go-app
-                    kubectl get svc my-go-app
+                    kubectl --insecure-skip-tls-verify get pods -l app=my-go-app
+                    kubectl --insecure-skip-tls-verify get svc my-go-app
                 '''
             }
         }
