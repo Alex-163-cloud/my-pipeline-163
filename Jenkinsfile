@@ -1,11 +1,11 @@
 pipeline {
     agent {
-        docker {
-            image 'golang:1.21-alpine'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/.kube:/root/.kube'
-            reuseNode true
-        }
+    docker {
+        image 'golang:1.21-alpine'
+        args '-u root -v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/.kube:/root/.kube'
+        reuseNode true
     }
+}
 
     environment {
         TIMEZONE = 'Europe/Moscow'
