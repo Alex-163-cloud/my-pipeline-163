@@ -1,11 +1,21 @@
 pipeline {
     agent {
-        docker {
-            image 'golang:1.21-alpine'
-            args '-u root -v /var/run/docker.sock:/var/run/docker.sock -v jenkins-kube:/root/.kube'
-            reuseNode true
-        }
+    kubernetes {
+        cloud 'kubernetes'
+        defaultContainer 'golang'
+        yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: golang
+    image: golang:1.21-alpine
+    command:
+    - cat
+    tty: true
+'''
     }
+}
 
     environment {
         TIMEZONE = 'Europe/Moscow'
