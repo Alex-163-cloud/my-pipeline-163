@@ -26,6 +26,16 @@
 | **Мониторинг** | Prometheus, Grafana |
 | **GitOps** | Flux |
 
+### 📋 Требования
+
+- **Docker** — для сборки и запуска контейнеров
+- **Minikube** — локальный Kubernetes-кластер
+- **kubectl** — управление кластером
+- **Jenkins** — CI/CD-сервер (локально в Docker)
+- **GitLab** — репозиторий и CI/CD
+- **HashiCorp Vault** — управление секретами (опционально)
+- **Nexus** — менеджер артефактов (опционально)
+
 ### 🚀 Как работает пайплайн
 
 1. **`git push` в `main`** — GitLab получает коммит.
@@ -48,6 +58,9 @@ my-pipeline-163/
 ├── Dockerfile              # Многостадийная сборка
 ├── Jenkinsfile             # Jenkins Pipeline
 ├── .gitlab-ci.yml          # GitLab CI конфигурация
+├── .gitignore              # Игнорируемые файлы
+├── clusters/               # Конфигурация кластеров
+│   └── minikube/           # Настройки Minikube
 ├── k8s/                    # Kubernetes манифесты
 │   ├── deployment.yaml
 │   └── service.yaml
@@ -100,6 +113,16 @@ and **Kubernetes** (Minikube).
 | **Monitoring** | Prometheus, Grafana |
 | **GitOps** | Flux |
 
+### 📋 Requirements
+
+- **Docker** — for building and running containers
+- **Minikube** — local Kubernetes cluster
+- **kubectl** — cluster management
+- **Jenkins** — CI/CD server (locally in Docker)
+- **GitLab** — repository and CI/CD
+- **HashiCorp Vault** — secrets management (optional)
+- **Nexus** — artifact repository (optional)
+
 ### 🚀 Pipeline Flow
 
 1. **`git push` to `main`** — GitLab receives the commit.
@@ -122,6 +145,9 @@ my-pipeline-163/
 ├── Dockerfile              # Multi-stage build
 ├── Jenkinsfile             # Jenkins Pipeline
 ├── .gitlab-ci.yml          # GitLab CI config
+├── .gitignore              # Ignored files
+├── clusters/               # Cluster configurations
+│   └── minikube/           # Minikube settings
 ├── k8s/                    # Kubernetes manifests
 │   ├── deployment.yaml
 │   └── service.yaml
