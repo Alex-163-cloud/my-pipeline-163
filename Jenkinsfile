@@ -7,6 +7,7 @@ pipeline {
 apiVersion: v1
 kind: Pod
 spec:
+  serviceAccountName: jenkins
   containers:
   - name: golang
     image: golang:1.21-alpine
@@ -31,6 +32,7 @@ spec:
 '''
     }
 }
+
 
     environment {
         TIMEZONE = 'Europe/Moscow'
@@ -92,10 +94,10 @@ spec:
             steps {
                 echo 'Deploying to Kubernetes...'
                 sh '''
-                    export KUBECONFIG=/root/.kube/config
-                    kubectl --insecure-skip-tls-verify apply -f k8s/deployment.yaml
-                    kubectl --insecure-skip-tls-verify apply -f k8s/service.yaml
-                    kubectl --insecure-skip-tls-verify rollout status deployment/my-go-app --timeout=60s
+    kubectl apply -f k8s/deployment.yaml
+    kubectl apply -f k8s/service.yaml
+    kubectl rollout status deployment/my-go-app --timeout=60s
+
                 '''
                 echo 'Deployed successfully!'
             }
@@ -104,9 +106,8 @@ spec:
         stage('Verify') {
             steps {
                 sh '''
-                    export KUBECONFIG=/root/.kube/config
-                    kubectl --insecure-skip-tls-verify get pods -l app=my-go-app
-                    kubectl --insecure-skip-tls-verify get svc my-go-app
+                    kubectl get pods -l app=my-go-app
+                    kubectl get svc my-go-app
                 '''
             }
         }
