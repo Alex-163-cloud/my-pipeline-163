@@ -13,6 +13,21 @@ spec:
     command:
     - cat
     tty: true
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    command:
+    - /busybox/cat
+    tty: true
+    volumeMounts:
+    - name: docker-config
+      mountPath: /kaniko/.docker
+  volumes:
+  - name: docker-config
+    secret:
+      secretName: dockerhub-secret
+      items:
+      - key: .dockerconfigjson
+        path: config.json
 '''
     }
 }
@@ -52,23 +67,19 @@ spec:
         }
 
         stage('Build & Push Docker Image') {
-            steps {
-                script {
-                    echo "Building image ${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}..."
-                    def app = docker.build("${DOCKER_HUB_USER}/my-go-app:${env.BUILD_NUMBER}")
-
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh '''
-                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                            docker push ${DOCKER_HUB_USER}/my-go-app:${BUILD_NUMBER}
-                            docker tag ${DOCKER_HUB_USER}/my-go-app:${BUILD_NUMBER} ${DOCKER_HUB_USER}/my-go-app:latest
-                            docker push ${DOCKER_HUB_USER}/my-go-app:latest
-                        '''
-                    }
-                    echo "Pushed to Docker Hub"
-                }
-            }
+    steps {
+        container('kaniko') {
+            sh '''
+                /kaniko/executor \
+                  --dockerfile=${WORKSPACE}/Dockerfile \
+                  --context=${WORKSPACE} \
+                  --destination=zakon13/my-go-app:${BUILD_NUMBER} \
+                  --destination=zakon13/my-go-app:latest \
+                  --cache=true
+            '''
         }
+    }
+}
 
         stage('Test') {
             steps {
